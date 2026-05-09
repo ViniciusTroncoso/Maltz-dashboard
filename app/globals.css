@@ -1,0 +1,139 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Bebas+Neue&family=JetBrains+Mono:wght@400;500;600&display=swap");
+
+:root {
+  --ink-900: #000000;
+  --ink-800: #0a0908;
+  --ink-700: #121110;
+  --ink-600: #1a1816;
+  --amber: #f5a623;
+  --amber-dim: #d88a0e;
+  --ember: #e63946;
+  --cream: #f5e9d4;
+}
+
+* {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+html,
+body {
+  background: var(--ink-900);
+  color: var(--cream);
+  font-family: "Inter", system-ui, sans-serif;
+}
+
+body {
+  background-image:
+    radial-gradient(
+      ellipse 80% 50% at 50% -10%,
+      rgba(245, 166, 35, 0.12),
+      transparent 60%
+    ),
+    radial-gradient(
+      ellipse 60% 40% at 100% 100%,
+      rgba(230, 57, 70, 0.06),
+      transparent 60%
+    ),
+    radial-gradient(circle at 1px 1px, rgba(245, 166, 35, 0.04) 1px, transparent 0);
+  background-size: auto, auto, 24px 24px;
+  background-attachment: fixed;
+  min-height: 100vh;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: var(--ink-800);
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(245, 166, 35, 0.2);
+  border-radius: 8px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(245, 166, 35, 0.4);
+}
+
+/* Utility classes */
+.font-display {
+  font-family: "Bebas Neue", Impact, sans-serif;
+  letter-spacing: 0.02em;
+}
+
+.font-mono {
+  font-family: "JetBrains Mono", monospace;
+}
+
+.glass-panel {
+  background: linear-gradient(
+    180deg,
+    rgba(26, 24, 22, 0.85) 0%,
+    rgba(10, 9, 8, 0.85) 100%
+  );
+  border: 1px solid rgba(245, 166, 35, 0.12);
+  backdrop-filter: blur(12px);
+}
+
+.glass-panel-amber {
+  background: linear-gradient(
+    180deg,
+    rgba(245, 166, 35, 0.08) 0%,
+    rgba(245, 166, 35, 0.02) 100%
+  );
+  border: 1px solid rgba(245, 166, 35, 0.25);
+}
+
+.text-gradient-amber {
+  background: linear-gradient(135deg, #f5a623 0%, #fdebc4 50%, #f5a623 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+}
+
+.hex-clip {
+  clip-path: polygon(
+    25% 0%,
+    75% 0%,
+    100% 50%,
+    75% 100%,
+    25% 100%,
+    0% 50%
+  );
+}
+
+/* Live pulse for "online" badge */
+@keyframes pulse-amber {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(245, 166, 35, 0.6);
+  }
+  50% {
+    box-shadow: 0 0 0 8px rgba(245, 166, 35, 0);
+  }
+}
+.pulse-amber {
+  animation: pulse-amber 2s infinite;
+}
+
+/* Subtle reveal */
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.fade-up {
+  animation: fade-up 0.6s ease-out backwards;
+}
