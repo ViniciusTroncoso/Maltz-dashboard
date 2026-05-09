@@ -1,48 +1,38 @@
-import { promises as fs } from "fs";
-import path from "path";
 import type { AdSpend, CampaignMetric, Lead } from "./types";
 import { seedAdSpend, seedCampaigns, seedLeads } from "./seed";
 
-const DATA_DIR = path.join(process.cwd(), "data");
-const LEADS_FILE = path.join(DATA_DIR, "leads.json");
-const SPEND_FILE = path.join(DATA_DIR, "ad-spend.json");
-const CAMPAIGNS_FILE = path.join(DATA_DIR, "campaigns.json");
+// In-memory store.
+// Vercel serverless functions têm FS read-only — só /tmp é gravável e mesmo
+// assim por instância. Pra prototype isso resolve: o seed roda na primeira
+// chamada de cada lambda e fica em memória até o cold restart.
+//
+// Pra produção real (n8n persistindo leads de verdade entre cold starts e
+// entre múltiplas instâncias), trocar por Vercel KV, Upstash Redis ou
+// Supabase. A interface do `store` foi mantida igual pra facilitar o swap.
 
-async function ensureDir() {
-  await fs.mkdir(DATA_DIR, { recursive: true });
-}
+let leadsState: Lead[] | null = null;
+let spendState: AdSpend[] | null = null;
+let campaignsState: CampaignMetric[] | null = null;
 
-async function readJsonOrSeed<T>(file: string, seed: T): Promise<T> {
-  await ensureDir();
-  try {
-    const raw = await fs.readFile(file, "utf8");
-    return JSON.parse(raw) as T;
-  } catch {
-    await fs.writeFile(file, JSON.stringify(seed, null, 2), "utf8");
-    return seed;
-  }
-}
-
-async function writeJson<T>(file: string, data: T) {
-  await ensureDir();
-  await fs.writeFile(file, JSON.stringify(data, null, 2), "utf8");
+function ensureLeads(): Lead[] {
+  if (!leadsState) leadsState = seedLeads();
+  return leadsState;
 }
 
 export const store = {
   async getLeads(): Promise<Lead[]> {
-    return readJsonOrSeed<Lead[]>(LEADS_FILE, seedLeads());
+    return ensureLeads();
   },
   async saveLeads(leads: Lead[]) {
-    await writeJson(LEADS_FILE, leads);
+    leadsState = leads;
   },
   async addLead(lead: Lead) {
-    const leads = await this.getLeads();
+    const leads = ensureLeads();
     leads.unshift(lead);
-    await this.saveLeads(leads);
     return lead;
   },
   async updateLead(id: string, patch: Partial<Lead>): Promise<Lead | null> {
-    const leads = await this.getLeads();
+    const leads = ensureLeads();
     const idx = leads.findIndex((l) => l.id === id);
     if (idx === -1) return null;
     leads[idx] = {
@@ -50,13 +40,14 @@ export const store = {
       ...patch,
       atualizadoEm: new Date().toISOString(),
     };
-    await this.saveLeads(leads);
     return leads[idx];
   },
   async getAdSpend(): Promise<AdSpend[]> {
-    return readJsonOrSeed<AdSpend[]>(SPEND_FILE, seedAdSpend());
+    if (!spendState) spendState = seedAdSpend();
+    return spendState;
   },
   async getCampaigns(): Promise<CampaignMetric[]> {
-    return readJsonOrSeed<CampaignMetric[]>(CAMPAIGNS_FILE, seedCampaigns());
+    if (!campaignsState) campaignsState = seedCampaigns();
+    return campaignsState;
   },
 };
